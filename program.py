@@ -53,11 +53,13 @@ class Window(QtGui.QMainWindow):
 
     def loadCsv(self, fileName):
         data = dataFormatter(fileName)
+        n = 0
         for entry in data:
             print(entry)
-            item = QtGui.QTableWidgetItem()
-            item.setText(entry)
-            self.table.setItem(self.table.rowCount()-1, 0, item)
+            newItem = QtGui.QTableWidgetItem(entry)
+            self.table.setItem(n, 0, newItem)
+            n += 1
+            
 
     @QtCore.pyqtSlot()
     def pushImportAction(self):
