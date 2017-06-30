@@ -1,5 +1,4 @@
 import sys
-import pandas as pd
 import csv
 from PyQt4 import QtCore, QtGui
 
@@ -20,6 +19,7 @@ class Window(QtGui.QMainWindow):
         saveAction = QtGui.QAction("&Save", self)
         saveAction.setShortcut("Ctrl+S")
         saveAction.setStatusTip('Save current spreadsheet')
+        saveAction.triggered.connect(self.pushSaveAction)
         #open action
         openAction = QtGui.QAction("&Open", self)
         openAction.setShortcut("Ctrl+O")
@@ -33,7 +33,7 @@ class Window(QtGui.QMainWindow):
         searchAction = QtGui.QAction("&Search", self)
         searchAction.setShortcut("Ctrl+F")
         searchAction.setStatusTip('Search for a tag number')
-        #change rowCounr action
+        #change rowCount action
         rowCountAction = QtGui.QAction("&Change row count", self)
         rowCountAction.setShortcut("Ctrl+R")
         rowCountAction.setStatusTip('Change number of rows in table')
@@ -66,8 +66,25 @@ class Window(QtGui.QMainWindow):
         fileName = QtGui.QFileDialog.getOpenFileName(self, 'Open File', '/home/')
         self.loadCsv(fileName)
 
-    def Table(self):
-        
+    def pushSaveAction(self):
+        path = QtGui.QFileDialog.getSaveFileName(
+                self, 'Save File', '', 'CSV(*.csv)')
+        if path:
+            with open(path, 'w') as stream:
+                writer = csv.writer(stream)
+                for row in range(self.table.rowCount()):
+                    rowdata = []
+                    for column in range(self.table.columnCount()):
+                        item = self.table.item(row, column)
+                        if item is not None:
+                            rowdata.append(
+                                item.text())
+                        else:
+                            rowdata.append('')
+                    writer.writerow(rowdata)
+
+
+    def Table(self):        
         self.rowCount = 2048
         self.table = QtGui.QTableWidget()
         self.setCentralWidget(self.table)
@@ -77,6 +94,19 @@ class Window(QtGui.QMainWindow):
         self.table.setColumnCount(2)
         self.show()
 
+   #def initSearch(self):
+   #     self.le = QtGui.QLineEdit(self)
+   #     self.le.move(130,22)
+
+        
+   # def search(self):
+   #     text, ok = QtGui.QInputDialog.getText(self, 'Search Tag',
+   #         'Enter tag number:')
+   #     if ok:
+   #         self.le.setText(str(text))
+   
+
+#credit to Justin Hendryx for writing and explaining this class to me
 class dataFormatter(object):
     def __init__(self, filename):
         self._filename = filename
@@ -98,6 +128,8 @@ class dataFormatter(object):
         else:
             data = data.split()
             return data[4]
+
+            
 
 def main():
     app = QtGui.QApplication(sys.argv)
