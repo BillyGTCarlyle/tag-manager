@@ -24,6 +24,7 @@ class Window(QtGui.QMainWindow):
         openAction = QtGui.QAction("&Open", self)
         openAction.setShortcut("Ctrl+O")
         openAction.setStatusTip('Open an existing spreadsheet') 
+        openAction.triggered.connect(self.pushOpenAction)
         #import action
         importAction = QtGui.QAction("&Import", self)
         importAction.setShortcut("Ctrl+I")
@@ -82,7 +83,21 @@ class Window(QtGui.QMainWindow):
                         else:
                             rowdata.append('')
                     writer.writerow(rowdata)
-
+    
+    def pushOpenAction(self):
+        path = QtGui.QFileDialog.getOpenFileName(self, 'Open File', '/home')
+        if path:
+            with open(path, 'r') as stream:
+                self.table.setRowCount(0)
+                self.table.setColumnCount(0)
+                for rowdata in csv.reader(stream):
+                    row = self.table.rowCount()
+                    self.table.insertRow(row)
+                    self.table.setColumnCount(len(rowdata))
+                    for column, data in enumerate(rowdata):
+                        item = QtGui.QTableWidgetItem(data)
+                        self.table.setItem(row, column, item)
+                
 
     def Table(self):        
         self.rowCount = 2048
@@ -129,7 +144,6 @@ class dataFormatter(object):
             data = data.split()
             return data[4]
 
-            
 
 def main():
     app = QtGui.QApplication(sys.argv)
