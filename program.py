@@ -1,11 +1,14 @@
 import sys
 import csv
+import webbrowser
 from PyQt4 import QtCore, QtGui
 
 class Window(QtGui.QMainWindow):
     def __init__(self):
         super(Window, self).__init__()
         self.setWindowTitle("SheepScan")
+        #undo stack
+        # self.undoStack = QUndoStack(self)
         #exit action
         extractAction = QtGui.QAction("&Exit", self)
         extractAction.setShortcut("Ctrl+Q")
@@ -34,10 +37,19 @@ class Window(QtGui.QMainWindow):
         searchAction = QtGui.QAction("&Search", self)
         searchAction.setShortcut("Ctrl+F")
         searchAction.setStatusTip('Search for a tag number')
-        #change rowCount action
-        rowCountAction = QtGui.QAction("&Change row count", self)
-        rowCountAction.setShortcut("Ctrl+R")
-        rowCountAction.setStatusTip('Change number of rows in table')
+        # #undo action
+        # undoAction = QtGui.QAction("&Undo", self)
+        # undoAction.setShortcut("Ctrl+Z")
+        # undoAction.setStatusTip("Undo last change")
+        # undoAction.triggered.connect(self.undoStack.undo())
+        # #redo action
+        # redoAction = QtGui.QAction("&Redo", self)
+        # redoAction.setStatusTip("Redo last undo")
+        # redoAction.triggered.connect(self.undoStack.redo())
+        #report issue action
+        issueAction = QtGui.QAction("&Report an issue", self)
+        issueAction.setStatusTip("Report an issue to the developer")
+        issueAction.triggered.connect(self.reportIssue)
         #build menu
         self.statusBar()
         mainMenu = self.menuBar()
@@ -49,7 +61,10 @@ class Window(QtGui.QMainWindow):
         fileMenu.addAction(extractAction)
         editMenu = mainMenu.addMenu('&Edit')
         editMenu.addAction(searchAction)
-        editMenu.addAction(rowCountAction)
+        # editMenu.addAction(undoAction)
+        # editMenu.addAction(redoAction)
+        helpMenu = mainMenu.addMenu('&Help')
+        helpMenu.addAction(issueAction)
         self.Table()
 
     def loadCsv(self, fileName):
@@ -69,7 +84,7 @@ class Window(QtGui.QMainWindow):
 
     def pushSaveAction(self):
         path = QtGui.QFileDialog.getSaveFileName(
-                self, 'Save File', '', 'CSV(*.csv)')
+                self, 'Save File', '', '.csv')
         if path:
             with open(path, 'w') as stream:
                 writer = csv.writer(stream)
@@ -98,13 +113,14 @@ class Window(QtGui.QMainWindow):
                         item = QtGui.QTableWidgetItem(data)
                         self.table.setItem(row, column, item)
                 
+    def reportIssue(self):
+        webbrowser.open('https://github.com/BillyGTCarlyle/tag-manager/issues')
 
     def Table(self):        
         self.rowCount = 2048
         self.table = QtGui.QTableWidget()
         self.setCentralWidget(self.table)
-        self.headers = ['Type', 'Number']
-        self.table.setHorizontalHeaderLabels(self.headers)
+        self.table.setHorizontalHeaderLabels(['Number', 'Comments'])
         self.table.setRowCount(self.rowCount)
         self.table.setColumnCount(2)
         self.show()
