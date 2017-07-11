@@ -8,7 +8,7 @@ class Window(QtGui.QMainWindow):
         super(Window, self).__init__()
         self.setWindowTitle("SheepScan")
         #undo stack
-        # self.undoStack = QUndoStack(self)
+        self.undoStack = QtGui.QUndoStack(self)
         #exit action
         extractAction = QtGui.QAction("&Exit", self)
         extractAction.setShortcut("Ctrl+Q")
@@ -37,14 +37,16 @@ class Window(QtGui.QMainWindow):
         searchAction = QtGui.QAction("&Search", self)
         searchAction.setShortcut("Ctrl+F")
         searchAction.setStatusTip('Search for a tag number')
-        # #undo action
-        # undoAction = QtGui.QAction("&Undo", self)
-        # undoAction.setShortcut("Ctrl+Z")
-        # undoAction.setStatusTip("Undo last change")
+        searchAction.triggered.connect(self.showSearch)
+        #undo action
+        undoAction = QtGui.QAction("&Undo", self)
+        undoAction.setShortcut("Ctrl+Z")
+        undoAction.setStatusTip("Undo last change")
         # undoAction.triggered.connect(self.undoStack.undo())
-        # #redo action
-        # redoAction = QtGui.QAction("&Redo", self)
-        # redoAction.setStatusTip("Redo last undo")
+        #redo action
+        redoAction = QtGui.QAction("&Redo", self)
+        redoAction.setShortcut("Ctrl+Y")
+        redoAction.setStatusTip("Redo last undo")
         # redoAction.triggered.connect(self.undoStack.redo())
         #report issue action
         issueAction = QtGui.QAction("&Report an issue", self)
@@ -61,8 +63,8 @@ class Window(QtGui.QMainWindow):
         fileMenu.addAction(extractAction)
         editMenu = mainMenu.addMenu('&Edit')
         editMenu.addAction(searchAction)
-        # editMenu.addAction(undoAction)
-        # editMenu.addAction(redoAction)
+        editMenu.addAction(undoAction)
+        editMenu.addAction(redoAction)
         helpMenu = mainMenu.addMenu('&Help')
         helpMenu.addAction(issueAction)
         self.Table()
@@ -124,18 +126,22 @@ class Window(QtGui.QMainWindow):
         self.table.setRowCount(self.rowCount)
         self.table.setColumnCount(2)
         self.show()
-
-   #def initSearch(self):
-   #     self.le = QtGui.QLineEdit(self)
-   #     self.le.move(130,22)
-
+    #create search UI
+    def showSearch(self):
         
-   # def search(self):
-   #     text, ok = QtGui.QInputDialog.getText(self, 'Search Tag',
-   #         'Enter tag number:')
-   #     if ok:
-   #         self.le.setText(str(text))
-   
+        text, ok = QtGui.QInputDialog.getText(self, 'Search', 
+        'Enter tag number: ')
+
+        if ok:
+            self.searchItem = str(text)
+            print(text)
+            if self.searchItem:
+                self.searchForTag()
+
+    def searchForTag(self):
+        searchItems = self.table.findItems(self.searchItem, QtCore.Qt.MatchStartsWith)
+        self.table.setCurrentItem(searchItems[0])
+        
 
 #credit to Justin Hendryx for writing and explaining this class to me
 class dataFormatter(object):
