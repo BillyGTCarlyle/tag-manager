@@ -1,55 +1,53 @@
 import sys
 import csv
 import webbrowser
-from PyQt4 import QtCore, QtGui
+from PyQt5 import QtCore, QtGui, QtWidgets
 
-class Window(QtGui.QMainWindow):
+class Window(QtWidgets.QMainWindow):
     def __init__(self):
         super(Window, self).__init__()
         self.setWindowTitle("SheepScan")
         #undo stack
-        self.undoStack = QtGui.QUndoStack(self)
+        # self.undoStack = QUndoStack(self)
         #exit action
-        extractAction = QtGui.QAction("&Exit", self)
+        extractAction = QtWidgets.QAction("&Exit", self)
         extractAction.setShortcut("Ctrl+Q")
         extractAction.setStatusTip('Exit the app')
         extractAction.triggered.connect(QtCore.QCoreApplication.instance().quit)
         #new action
-        newAction = QtGui.QAction("&New", self)
+        newAction = QtWidgets.QAction("&New", self)
         newAction.setShortcut("Ctrl+N")
         newAction.setStatusTip('Create a new spreadsheet') 
         #save action
-        saveAction = QtGui.QAction("&Save", self)
+        saveAction = QtWidgets.QAction("&Save", self)
         saveAction.setShortcut("Ctrl+S")
         saveAction.setStatusTip('Save current spreadsheet')
         saveAction.triggered.connect(self.pushSaveAction)
         #open action
-        openAction = QtGui.QAction("&Open", self)
+        openAction = QtWidgets.QAction("&Open", self)
         openAction.setShortcut("Ctrl+O")
         openAction.setStatusTip('Open an existing spreadsheet') 
         openAction.triggered.connect(self.pushOpenAction)
         #import action
-        importAction = QtGui.QAction("&Import", self)
+        importAction = QtWidgets.QAction("&Import", self)
         importAction.setShortcut("Ctrl+I")
         importAction.setStatusTip('Import from I-Read device')
         importAction.triggered.connect(self.pushImportAction)
         #search action
-        searchAction = QtGui.QAction("&Search", self)
+        searchAction = QtWidgets.QAction("&Search", self)
         searchAction.setShortcut("Ctrl+F")
         searchAction.setStatusTip('Search for a tag number')
-        searchAction.triggered.connect(self.showSearch)
-        #undo action
-        undoAction = QtGui.QAction("&Undo", self)
-        undoAction.setShortcut("Ctrl+Z")
-        undoAction.setStatusTip("Undo last change")
+        # #undo action
+        # undoAction = QtWidgets.QAction("&Undo", self)
+        # undoAction.setShortcut("Ctrl+Z")
+        # undoAction.setStatusTip("Undo last change")
         # undoAction.triggered.connect(self.undoStack.undo())
-        #redo action
-        redoAction = QtGui.QAction("&Redo", self)
-        redoAction.setShortcut("Ctrl+Y")
-        redoAction.setStatusTip("Redo last undo")
+        # #redo action
+        # redoAction = QtWidgets.QAction("&Redo", self)
+        # redoAction.setStatusTip("Redo last undo")
         # redoAction.triggered.connect(self.undoStack.redo())
         #report issue action
-        issueAction = QtGui.QAction("&Report an issue", self)
+        issueAction = QtWidgets.QAction("&Report an issue", self)
         issueAction.setStatusTip("Report an issue to the developer")
         issueAction.triggered.connect(self.reportIssue)
         #build menu
@@ -63,8 +61,8 @@ class Window(QtGui.QMainWindow):
         fileMenu.addAction(extractAction)
         editMenu = mainMenu.addMenu('&Edit')
         editMenu.addAction(searchAction)
-        editMenu.addAction(undoAction)
-        editMenu.addAction(redoAction)
+        # editMenu.addAction(undoAction)
+        # editMenu.addAction(redoAction)
         helpMenu = mainMenu.addMenu('&Help')
         helpMenu.addAction(issueAction)
         self.Table()
@@ -74,21 +72,23 @@ class Window(QtGui.QMainWindow):
         n = 0
         for entry in data:
             print(entry)
-            newItem = QtGui.QTableWidgetItem(entry)
+            newItem = QtWidgets.QTableWidgetItem(entry)
             self.table.setItem(n, 0, newItem)
             n += 1
             
 
     @QtCore.pyqtSlot()
     def pushImportAction(self):
-        fileName = QtGui.QFileDialog.getOpenFileName(self, 'Open File', '/home/')
-        self.loadCsv(fileName)
+        fileName = QtWidgets.QFileDialog.getOpenFileName(self, "Import File", "/home/")
+        if fileName:
+            print(fileName[0])
+        self.loadCsv(fileName[0])
 
     def pushSaveAction(self):
-        path = QtGui.QFileDialog.getSaveFileName(
+        path = QtWidgets.QFileDialog.getSaveFileName(
                 self, 'Save File', '', '.csv')
         if path:
-            with open(path, 'w') as stream:
+            with open(path[0], 'w') as stream:
                 writer = csv.writer(stream)
                 for row in range(self.table.rowCount()):
                     rowdata = []
@@ -102,9 +102,9 @@ class Window(QtGui.QMainWindow):
                     writer.writerow(rowdata)
     
     def pushOpenAction(self):
-        path = QtGui.QFileDialog.getOpenFileName(self, 'Open File', '/home')
+        path = QtWidgets.QFileDialog.getOpenFileName(self, 'Open File', '/home')
         if path:
-            with open(path, 'r') as stream:
+            with open(str(path[0])) as stream:
                 self.table.setRowCount(0)
                 self.table.setColumnCount(0)
                 for rowdata in csv.reader(stream):
@@ -112,7 +112,7 @@ class Window(QtGui.QMainWindow):
                     self.table.insertRow(row)
                     self.table.setColumnCount(len(rowdata))
                     for column, data in enumerate(rowdata):
-                        item = QtGui.QTableWidgetItem(data)
+                        item = QtWidgets.QTableWidgetItem(data)
                         self.table.setItem(row, column, item)
                 
     def reportIssue(self):
@@ -120,28 +120,24 @@ class Window(QtGui.QMainWindow):
 
     def Table(self):        
         self.rowCount = 2048
-        self.table = QtGui.QTableWidget()
+        self.table = QtWidgets.QTableWidget()
         self.setCentralWidget(self.table)
         self.table.setHorizontalHeaderLabels(['Number', 'Comments'])
         self.table.setRowCount(self.rowCount)
         self.table.setColumnCount(2)
         self.show()
-    #create search UI
-    def showSearch(self):
-        
-        text, ok = QtGui.QInputDialog.getText(self, 'Search', 
-        'Enter tag number: ')
 
-        if ok:
-            self.searchItem = str(text)
-            print(text)
-            if self.searchItem:
-                self.searchForTag()
+   #def initSearch(self):
+   #     self.le = QtGui.QLineEdit(self)
+   #     self.le.move(130,22)
 
-    def searchForTag(self):
-        searchItems = self.table.findItems(self.searchItem, QtCore.Qt.MatchStartsWith)
-        self.table.setCurrentItem(searchItems[0])
         
+   # def search(self):
+   #     text, ok = QtGui.QInputDialog.getText(self, 'Search Tag',
+   #         'Enter tag number:')
+   #     if ok:
+   #         self.le.setText(str(text))
+   
 
 #credit to Justin Hendryx for writing and explaining this class to me
 class dataFormatter(object):
@@ -168,7 +164,7 @@ class dataFormatter(object):
 
 
 def main():
-    app = QtGui.QApplication(sys.argv)
+    app = QtWidgets.QApplication(sys.argv)
     GUI = Window()
     sys.exit(app.exec_())
 
